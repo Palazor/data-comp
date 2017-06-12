@@ -69,11 +69,17 @@ for row in range(rows):
     dsTest.addSample(tuple(x_test.iloc[row]), y_test.iloc[row])
 dsTest._convertToOneOfMany()
 
-fnn = buildNetwork(18, 30, 2, outclass=SoftmaxLayer)
+fnn = buildNetwork(18, 20, 20, 2, outclass=SoftmaxLayer)
 trainer = BackpropTrainer(fnn, dataset=dsTrain, momentum=0.1, verbose=True, weightdecay=0.01)
-for i in range(20):
-    trainer.trainEpochs(10)
 
-    trnresult = percentError(trainer.testOnClassData(), dsTrain['target'])
-    testResult = percentError(trainer.testOnClassData(dataset=dsTest), dsTest['target'])
-    print("epoch: {}\ntrain error: {}\ntest error: {}".format(trainer.totalepochs, trnresult, testResult))
+trainer.trainEpochs(1000)
+trnresult = percentError(trainer.testOnClassData(), dsTrain['target'])
+testResult = percentError(trainer.testOnClassData(dataset=dsTest), dsTest['target'])
+print("epoch: {}\ntrain error: {}\ntest error: {}".format(trainer.totalepochs, trnresult, testResult))
+
+res = trainer.testOnClassData()
+tgt = [int(x[1]) for x in dsTrain['target']]
+print(accuracy_score(tgt, res),
+      precision_score(tgt, res),
+      recall_score(tgt, res),
+      f1_score(tgt, res))
