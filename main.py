@@ -31,7 +31,7 @@ def train_model(classifier, X):
     pre = precision_score(y_tst, y_prd)
     rec = recall_score(y_tst, y_prd)
     f1 = f1_score(y_tst, y_prd)
-    print(classifier, '\n\tacc:{}\n\tpre:{}\n\trec:{}\n\tf1:{}\n'.format(acc, pre, rec, f1))
+    # print(classifier, '\n\tacc:{}\n\tpre:{}\n\trec:{}\n\tf1:{}\n'.format(acc, pre, rec, f1))
     return classifier
 
 train_data = pd.read_csv('./data/train_1.csv')
@@ -59,17 +59,17 @@ features_train = features_pd.iloc[:train_count]
 # print(features_train.describe())
 features_test = features_pd.iloc[train_count:]
 # print(features_test.describe())
-x_train, x_test, y_train, y_test = train_test_split(features_train, labels, test_size=0.2, random_state=1)
+x_train, x_test, y_train, y_test = train_test_split(features_train, labels, test_size=0.2, random_state=2)
 X = (x_train, x_test, y_train, y_test)
 
 svc = svm.SVC(kernel='rbf', C=10, random_state=1, gamma=0.1, max_iter=1000)
 linear_svc = svm.LinearSVC(C=10, random_state=1, max_iter=100)
 pred = train_model(svc, X).predict(features_test)
-print(pred, len(pred), pred.mean())
+# print(pred, len(pred), pred.mean())
 train_model(linear_svc, X)
 
-print(cross_val_score(svc, features_train, labels, scoring="neg_mean_squared_error", cv=10).mean())
-print(cross_val_score(linear_svc, features_train, labels, scoring="neg_mean_squared_error", cv=10).mean())
+# print(cross_val_score(svc, features_train, labels, scoring="neg_mean_squared_error", cv=10).mean())
+# print(cross_val_score(linear_svc, features_train, labels, scoring="neg_mean_squared_error", cv=10).mean())
 
 
 
@@ -86,29 +86,38 @@ for row in range(rows):
 dsTest._convertToOneOfMany()
 
 if True:
-    fnn = buildNetwork(18, 20, 20, 2, outclass=SoftmaxLayer)
-    trainer = BackpropTrainer(fnn, dataset=dsTrain, momentum=0.1, verbose=True, weightdecay=0.01)
+    fnn = buildNetwork(18, 15, 2, outclass=SoftmaxLayer)
+    trainer = BackpropTrainer(fnn, dataset=dsTrain, momentum=0, verbose=False, weightdecay=0.0)
 
     # trainer.trainEpochs(1000)
-    trainer.trainUntilConvergence(maxEpochs=10000)
+    trainer.trainUntilConvergence(maxEpochs=100000)
     NetworkWriter.writeToFile(fnn, 'filename.xml')
 else:
     fnn = NetworkReader.readFrom('filename.xml')
+    trainer = BackpropTrainer(fnn, dataset=dsTrain, momentum=0, verbose=False, weightdecay=0.0)
 
 trnresult = percentError(trainer.testOnClassData(), dsTrain['target'])
 testResult = percentError(trainer.testOnClassData(dataset=dsTest), dsTest['target'])
-print("epoch: {}\ntrain error: {}\ntest error: {}".format(trainer.totalepochs, trnresult, testResult))
+# print("epoch: {}\ntrain error: {}\ntest error: {}".format(trainer.totalepochs, trnresult, testResult))
 
 res = trainer.testOnClassData(dataset=dsTest)
+out = fnn.activateOnDataset(dsTest).argmax(axis=1)
 tgt = [int(x[1]) for x in dsTest['target']]
-print(res)
-print(tgt)
-print(accuracy_score(tgt, res),
-      precision_score(tgt, res),
-      recall_score(tgt, res),
-      f1_score(tgt, res))
+# print(accuracy_score(tgt, res),
+#       precision_score(tgt, res),
+#       recall_score(tgt, res),
+#       f1_score(tgt, res))
 
 pred = train_model(svc, X).predict(x_test)
-# res = [0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
-# tgt = [0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0]
-print(f1_score(tgt, pred), f1_score(tgt, res))
+print('Test', f1_score(tgt, pred), f1_score(tgt, res), f1_score(tgt, out))
+
+res = trainer.testOnClassData(dataset=dsTrain)
+out = fnn.activateOnDataset(dsTrain).argmax(axis=1)
+tgt = [int(x[1]) for x in dsTrain['target']]
+# print(accuracy_score(tgt, res),
+#       precision_score(tgt, res),
+#       recall_score(tgt, res),
+#       f1_score(tgt, res))
+
+pred = train_model(svc, X).predict(x_train)
+print('Train', f1_score(tgt, pred), f1_score(tgt, res), f1_score(tgt, out))
